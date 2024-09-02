@@ -1,7 +1,6 @@
 const express = require('express');
 const axios = require('axios');
 const { getToken } = require("./apiUtils");
-
 const app = express();
 const port = 8081; 
 const key = process.env.KEY;
@@ -48,6 +47,8 @@ app.post('/api/stock/current-price', async (req, res) => {
 
 
 
+
+
 app.post('/api/bond/current-price', async (req, res) => {
     const { stockId } = req.body; 
 
@@ -84,6 +85,28 @@ app.post('/api/bond/current-price', async (req, res) => {
         });
     }
 });
+
+
+
+app.post('/api/ETF/current-price', async (req, res) => {
+    const { stockId } = req.body; 
+    
+    if (!stockId) {
+        return res.status(400).json({ error: "stockId is required" });
+    }
+    const url = `https://polling.finance.naver.com/api/realtime/domestic/stock/${stockId}`;
+
+    try {
+        const response = await axios.get(url);
+        const data = response.data;
+        console.log('Stock Price Data:', data.datas[0]);
+        return res.json({ currentPrice: data.datas[0].closePrice}) ;
+    }catch (error) {
+        console.error('Error fetching stock price:', error.message);
+    }
+
+});
+
 
 app.listen(port, () => {
     console.log(`REST API server is listening on port ${port}`);
